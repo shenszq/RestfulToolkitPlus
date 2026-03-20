@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.shenszq.restful.toolkit"
-version = "0.1.0"
+version = "0.1.1"
 
 repositories {
     mavenCentral()
@@ -16,7 +16,7 @@ repositories {
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
 dependencies {
     intellijPlatform {
-        intellijIdea("2025.3.2")
+        intellijIdea("2024.3.6")
         testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
         bundledPlugin("com.intellij.java")
         bundledPlugin("com.intellij.properties")
@@ -31,12 +31,11 @@ intellijPlatform {
 
     pluginConfiguration {
         ideaVersion {
-            sinceBuild = "253"
-            untilBuild = "253.*"
+            sinceBuild = "243"
         }
 
         changeNotes = """
-            Rebuilt the REST endpoint navigation flow for IntelliJ IDEA 2025.3.x.
+            Rebuilt the REST endpoint navigation flow for IntelliJ IDEA 2024.3+.
         """.trimIndent()
     }
 }

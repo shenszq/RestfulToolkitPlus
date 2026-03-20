@@ -4,7 +4,7 @@
     <vendor email="support@example.com">shenszq</vendor>
 
     <description><![CDATA[
-        <h3>RESTful service navigation for IntelliJ IDEA 2025.3.x</h3>
+        <h3>RESTful service navigation for IntelliJ IDEA 2024.3+</h3>
         <ul>
             <li>Jump from a URL path to the matching controller method.</li>
             <li>Supports Spring MVC / Spring Boot and JAX-RS.</li>
@@ -19,7 +19,7 @@
     <depends>org.jetbrains.kotlin</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <projectService serviceImplementation="com.zhaow.restful.navigation.action.GotoRequestMappingConfiguration"/>
+        <projectService serviceImplementation="com.shenszq.restful.navigation.action.GotoRequestMappingConfiguration"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
@@ -28,7 +28,7 @@
 
     <actions>
         <action id="Toolkit.GotoService"
-                class="com.zhaow.restful.navigation.action.GotoRequestMappingAction"
+                class="com.shenszq.restful.navigation.action.GotoRequestMappingAction"
                 text="Go to REST Service"
                 description="Jump to a REST controller method by URL"
                 icon="AllIcons.Actions.Search">

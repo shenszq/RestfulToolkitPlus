@@ -1,0 +1,75 @@
+package com.shenszq.restful.common.resolver;
+
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.search.searches.AnnotatedElementsSearch;
+import com.shenszq.restful.annotations.JaxrsPathAnnotation;
+import com.shenszq.restful.common.jaxrs.JaxrsAnnotationHelper;
+import com.shenszq.restful.method.RequestPath;
+import com.shenszq.restful.navigation.action.RestServiceItem;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
+public final class JaxrsResolver extends BaseServiceResolver {
+    public JaxrsResolver(@NotNull Module module) {
+        myModule = module;
+    }
+
+    public JaxrsResolver(@NotNull Project project) {
+        myProject = project;
+    }
+
+    @Override
+    @NotNull
+    protected List<RestServiceItem> getRestServiceItemList(@NotNull Project project, @NotNull GlobalSearchScope scope) {
+        List<RestServiceItem> items = new ArrayList<>();
+        Set<String> visitedClasses = new LinkedHashSet<>();
+
+        for (JaxrsPathAnnotation pathAnnotation : JaxrsPathAnnotation.values()) {
+            PsiClass annotationClass = JavaPsiFacade.getInstance(project)
+                .findClass(pathAnnotation.getQualifiedName(), GlobalSearchScope.allScope(project));
+            if (annotationClass == null) {
+                continue;
+            }
+
+            AnnotatedElementsSearch.searchPsiClasses(annotationClass, scope).forEach(psiClass -> {
+                String key = psiClass.getQualifiedName() != null
+                    ? psiClass.getQualifiedName()
+                    : psiClass.getContainingFile().getVirtualFile() + ":" + psiClass.getTextOffset();
+                if (visitedClasses.add(key)) {
+                    items.addAll(getServiceItemList(psiClass));
+                }
+                return true;
+            });
+        }
+
+        return items;
+    }
+
+    @NotNull
+    private List<RestServiceItem> getServiceItemList(@NotNull PsiClass psiClass) {
+        List<RestServiceItem> items = new ArrayList<>();
+        String classUriPath = JaxrsAnnotationHelper.getClassUriPath(psiClass);
+
+        for (PsiMethod psiMethod : psiClass.getMethods()) {
+            RequestPath[] methodRequestPaths = JaxrsAnnotationHelper.getRequestPaths(psiMethod);
+            if (methodRequestPaths.length == 0) {
+                continue;
+            }
+
+            for (RequestPath methodRequestPath : methodRequestPaths) {
+                items.add(createRestServiceItem(psiMethod, classUriPath, methodRequestPath));
+            }
+        }
+
+        return items;
+    }
+}
