@@ -1,117 +1,215 @@
-# IntelliJ Platform Plugin Template
+# RestfulToolkit Plus
 
-[![Twitter Follow](https://img.shields.io/badge/follow-%40JBPlatform-1DA1F2?logo=twitter)](https://twitter.com/JBPlatform)
-[![Developers Forum](https://img.shields.io/badge/JetBrains%20Platform-Join-blue)][jb:forum]
+![IntelliJ IDEA](https://img.shields.io/badge/IntelliJ%20IDEA-2024.3%2B-blue)
+![JDK](https://img.shields.io/badge/JDK-21-orange)
+![Language](https://img.shields.io/badge/Language-Java%20%2B%20Kotlin-7f52ff)
 
-## Plugin template structure
+一个用于 IntelliJ IDEA 的插件，支持根据请求 URL 或路径快速跳转到对应的后端 REST Controller 方法。
 
-A generated project contains the following content structure:
+RestfulToolkit Plus 的目标很简单：当你已经知道接口地址时，尽可能快地帮你定位到服务端入口代码。插件支持 Spring MVC / Spring Boot、JAX-RS，同时兼容 Java 与 Kotlin 控制器项目。
 
+## 功能特性
+
+- 支持通过完整 URL、相对路径或纯接口路径搜索控制器方法
+- 自动规范化输入内容，去掉协议、域名、端口、查询参数和片段标识
+- 支持 Spring MVC / Spring Boot 和 JAX-RS 接口扫描
+- 支持 Java 与 Kotlin 控制器
+- 支持在搜索弹窗中按 HTTP Method 过滤结果
+- 支持仅搜索当前模块
+- 优先复用编辑器选中文本或剪贴板中的 URL 作为初始搜索内容
+- 兼容 Kotlin K2 模式，不依赖脆弱的 Kotlin 内部索引实现
+
+## 适用场景
+
+在中大型后端项目里，已知请求地址但不知道入口代码的位置，是一个很常见的问题。
+
+例如：
+
+- 你从浏览器、Postman 或日志里复制了一条请求地址，想快速定位控制器
+- 你只知道某个接口路径，但不知道它属于哪个模块、哪个类
+- 项目是多模块结构，且同时混用了 Java、Kotlin、Spring 或 JAX-RS
+
+RestfulToolkit Plus 就是为这种场景准备的。
+
+## 安装方式
+
+### 从本地构建包安装
+
+1. 先构建插件包：
+
+```bash
+./gradlew buildPlugin
 ```
-.
-├── .run/                   Predefined Run/Debug Configurations
-├── build/                  Output build directory
-├── gradle
-│   ├── wrapper/            Gradle Wrapper
-├── src                     Plugin sources
-│   ├── main
-│   │   ├── kotlin/         Kotlin production sources
-│   │   └── resources/      Resources - plugin.xml, icons, messages
-├── .gitignore              Git ignoring rules
-├── build.gradle.kts        Gradle build configuration
-├── gradle.properties       Gradle configuration properties
-├── gradlew                 *nix Gradle Wrapper script
-├── gradlew.bat             Windows Gradle Wrapper script
-├── README.md               README
-└── settings.gradle.kts     Gradle project settings
+
+Windows：
+
+```bat
+gradlew.bat buildPlugin
 ```
 
-In addition to the configuration files, the most crucial part is the `src` directory, which contains our implementation
-and the manifest for our plugin – [plugin.xml][file:plugin.xml].
+2. 构建完成后，插件包会生成在：
 
-> [!NOTE]
-> To use Java in your plugin, create the `/src/main/java` directory.
+```text
+build/distributions/RestfulToolkitPlus-<version>.zip
+```
 
-## Plugin configuration file
+3. 在 IntelliJ IDEA 中安装：
 
-The plugin configuration file is a [plugin.xml][file:plugin.xml] file located in the `src/main/resources/META-INF`
-directory.
-It provides general information about the plugin, its dependencies, extensions, and listeners.
+   - 打开 `Settings` / `Preferences`
+   - 进入 `Plugins`
+   - 点击右上角齿轮图标
+   - 选择 `Install Plugin from Disk...`
+   - 选择上面生成的 `.zip` 文件
+   - 重启 IDE
 
-You can read more about this file in the [Plugin Configuration File][docs:plugin.xml] section of our documentation.
+### 注意事项
 
-If you're still not quite sure what this is all about, read our
-introduction: [What is the IntelliJ Platform?][docs:intro]
+- 安装时请选择 `build/distributions` 下的 `.zip` 文件，不是内部的 `.jar`
+- 当前插件面向 IntelliJ IDEA `2024.3+`
+- 如果“从磁盘安装”没有反应，先确认 IDEA 版本和安装文件路径是否正确
 
-$H$H Predefined Run/Debug configurations
+## 使用说明
 
-Within the default project structure, there is a `.run` directory provided containing predefined *Run/Debug
-configurations* that expose corresponding Gradle tasks:
+### 打开搜索弹窗
 
-| Configuration name | Description                                                                                                                                                                         |
-|--------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Run Plugin         | Runs [`:runIde`][gh:intellij-platform-gradle-plugin-runIde] IntelliJ Platform Gradle Plugin task. Use the *Debug* icon for plugin debugging.                                        |
-| Run Tests          | Runs [`:test`][gradle:lifecycle-tasks] Gradle task.                                                                                                                                 |
-| Run Verifications  | Runs [`:verifyPlugin`][gh:intellij-platform-gradle-plugin-verifyPlugin] IntelliJ Platform Gradle Plugin task to check the plugin compatibility against the specified IntelliJ IDEs. |
+插件动作名称：
 
-> [!NOTE]
-> You can find the logs from the running task in the `idea.log` tab.
+- `Go to REST Service`
 
-## Publishing the plugin
+默认快捷键：
 
-> [!TIP]
-> Make sure to follow all guidelines listed in [Publishing a Plugin][docs:publishing] to follow all recommended and
-> required steps.
+- `Ctrl + Alt + /`
 
-Releasing a plugin to [JetBrains Marketplace](https://plugins.jetbrains.com) is a straightforward operation that uses
-the `publishPlugin` Gradle task provided by
-the [intellij-platform-gradle-plugin][gh:intellij-platform-gradle-plugin-docs].
+你也可以通过 `Find Action` 搜索这个动作。
 
-You can also upload the plugin to the [JetBrains Plugin Repository](https://plugins.jetbrains.com/plugin/upload)
-manually via UI.
+### 支持的输入方式
 
-## Useful links
+下面这些内容都可以直接输入：
 
-- [IntelliJ Platform SDK Plugin SDK][docs]
-- [IntelliJ Platform Gradle Plugin Documentation][gh:intellij-platform-gradle-plugin-docs]
-- [IntelliJ Platform Explorer][jb:ipe]
-- [JetBrains Marketplace Quality Guidelines][jb:quality-guidelines]
-- [IntelliJ Platform UI Guidelines][jb:ui-guidelines]
-- [JetBrains Marketplace Paid Plugins][jb:paid-plugins]
-- [IntelliJ SDK Code Samples][gh:code-samples]
+```text
+/api/users/42
+api/users/42
+https://example.com/api/users/42?active=true
+localhost:8080/api/users/42
+```
 
-[docs]: https://plugins.jetbrains.com/docs/intellij
+### 输入规范化规则
 
-[docs:intro]: https://plugins.jetbrains.com/docs/intellij/intellij-platform.html?from=IJPluginTemplate
+插件会在匹配前自动处理输入内容：
 
-[docs:plugin.xml]: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html?from=IJPluginTemplate
+- 去掉协议、域名和端口
+- 去掉查询参数和 hash 片段
+- 将反斜杠转换为正斜杠
+- 合并重复斜杠
+- 自动补齐开头的 `/`
 
-[docs:publishing]: https://plugins.jetbrains.com/docs/intellij/publishing-plugin.html?from=IJPluginTemplate
+同时也支持常见 RESTful 路径变量：
 
-[file:plugin.xml]: ./src/main/resources/META-INF/plugin.xml
+```text
+/users/{id}
+/orders/{orderId:\d+}
+```
 
-[gh:code-samples]: https://github.com/JetBrains/intellij-sdk-code-samples
+### 典型使用流程
 
-[gh:intellij-platform-gradle-plugin]: https://github.com/JetBrains/intellij-platform-gradle-plugin
+1. 触发 `Go to REST Service`
+2. 粘贴或输入 URL / 路径
+3. 按需选择 HTTP Method 过滤
+4. 按需勾选 `当前模块`
+5. 选择结果后跳转到对应控制器方法
 
-[gh:intellij-platform-gradle-plugin-docs]: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
+## 兼容性
 
-[gh:intellij-platform-gradle-plugin-runIde]: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-tasks.html#runIde
+| 项目 | 要求 |
+| ---- | ---- |
+| IDE | IntelliJ IDEA 2024.3+ |
+| Platform Build | `243+` |
+| 构建 JDK | JDK 21 |
+| 依赖插件 | Java、Kotlin、YAML、Properties |
 
-[gh:intellij-platform-gradle-plugin-verifyPlugin]: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-tasks.html#verifyPlugin
+## 开发说明
 
-[gradle:lifecycle-tasks]: https://docs.gradle.org/current/userguide/java_plugin.html#lifecycle_tasks
+### 在沙箱 IDE 中运行插件
 
-[jb:github]: https://github.com/JetBrains/.github/blob/main/profile/README.md
+```bash
+./gradlew runIde
+```
 
-[jb:forum]: https://platform.jetbrains.com/
+Windows：
 
-[jb:quality-guidelines]: https://plugins.jetbrains.com/docs/marketplace/quality-guidelines.html
+```bat
+gradlew.bat runIde
+```
 
-[jb:paid-plugins]: https://plugins.jetbrains.com/docs/marketplace/paid-plugins-marketplace.html
+### 构建可安装插件包
 
-[jb:quality-guidelines]: https://plugins.jetbrains.com/docs/marketplace/quality-guidelines.html
+```bash
+./gradlew buildPlugin
+```
 
-[jb:ipe]: https://jb.gg/ipe
+### 运行测试
 
-[jb:ui-guidelines]: https://jetbrains.github.io/ui
+```bash
+./gradlew test
+```
+
+### 校验插件兼容性与元数据
+
+```bash
+./gradlew verifyPlugin
+```
+
+## 项目结构
+
+```text
+src/main/java/com/shenszq/restful/
+├── annotations/                 Spring / JAX-RS 注解定义
+├── common/
+│   ├── resolver/                接口解析器
+│   ├── spring/                  Spring 请求映射辅助类
+│   ├── jaxrs/                   JAX-RS 注解辅助类
+│   └── UrlPatternUtils.java     URL 归一化与匹配逻辑
+├── method/                      HTTP Method 与请求路径模型
+└── navigation/action/           动作、弹窗模型、贡献器与结果项
+
+src/main/resources/META-INF/
+└── plugin.xml                   IntelliJ 插件描述文件
+```
+
+## 关键文件
+
+- `build.gradle.kts`：插件构建、IDE 基线版本、兼容性配置
+- `src/main/resources/META-INF/plugin.xml`：插件 ID、依赖、动作和兼容性声明
+- `src/main/java/com/shenszq/restful/navigation/action/GotoRequestMappingAction.java`：入口动作
+- `src/main/java/com/shenszq/restful/common/UrlPatternUtils.java`：URL 归一化与匹配规则
+- `src/main/java/com/shenszq/restful/common/resolver/SpringResolver.java`：Spring 接口扫描实现
+- `src/main/java/com/shenszq/restful/common/resolver/JaxrsResolver.java`：JAX-RS 接口扫描实现
+
+## 常见问题
+
+### 从磁盘安装没有反应
+
+优先检查这些问题：
+
+- 是否选择了 `build/distributions` 下的 zip 包
+- IDEA 版本是否为 `2024.3+`
+- 安装后是否重启了 IDE
+
+### 本地构建失败
+
+请确认：
+
+- `JAVA_HOME` 指向 JDK 21
+- Gradle 可以访问 Maven Central 和 JetBrains 仓库
+- 你是在项目根目录执行构建命令
+
+## 贡献
+
+欢迎提交 Issue 和 Pull Request。
+
+如果你准备继续扩展这个插件，建议从下面几个入口开始阅读：
+
+1. `GotoRequestMappingAction`
+2. `GotoRequestMappingModel`
+3. `SpringResolver` / `JaxrsResolver`
+4. `UrlPatternUtils`
